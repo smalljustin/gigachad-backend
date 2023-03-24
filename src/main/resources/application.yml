@@ -3,10 +3,13 @@ spring:
     database: POSTGRESQL
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
   datasource:
     platform: postgres
     url: jdbc:postgresql://localhost:5432/gcc
     username: gcc
     password: hunter2
     driverClassName: org.postgresql.Driver
+
+auth:
+  url: https://openplanet.dev/api/auth/validate

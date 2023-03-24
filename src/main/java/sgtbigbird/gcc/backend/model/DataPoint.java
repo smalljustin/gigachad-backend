@@ -13,6 +13,8 @@ public class DataPoint {
     @GeneratedValue
     @Id
     private int id;
+    private String runId;
+    private String username;
     private int version;
     private String position;
     private String velocity;
