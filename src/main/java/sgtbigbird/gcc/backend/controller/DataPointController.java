@@ -17,6 +17,7 @@ import sgtbigbird.gcc.backend.model.DataPoint;
 import sgtbigbird.gcc.backend.model.DataPointWrapper;
 import sgtbigbird.gcc.backend.repository.DataPointRepository;
 
+import javax.naming.AuthenticationException;
 import java.net.URI;
 import java.util.*;
 
@@ -41,11 +42,20 @@ public class DataPointController {
     Map<UUID, String> tokensIssued = new HashMap<>();
 
     @PostMapping("/datapoint")
-    public void postPoints(@RequestBody DataPointWrapper inList) {
-        UUID u = UUID.fromString(inList.getToken());
-        if (!tokensIssued.containsKey(u)) {
-            return;
+    public void postPoints(@RequestBody DataPointWrapper inList) throws AuthenticationException {
+        if (inList.getToken().equals(ERROR)) {
+            log.warn("Got the error token :O");
+            throw new AuthenticationException();
         }
+
+
+        UUID u = UUID.fromString(inList.getToken());
+        log.info("Checking uuid {}", u);
+
+        if (!tokensIssued.containsKey(u)) {
+            throw new AuthenticationException();
+        }
+        log.info("Persisting data for {}", tokensIssued.get(u));
         inList.getData().forEach(
                 (ol) -> ol.forEach(li -> li.setUsername(tokensIssued.get(u)))
         );

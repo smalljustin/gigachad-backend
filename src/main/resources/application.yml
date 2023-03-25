@@ -1,8 +1,8 @@
 spring:
   jpa:
     database: POSTGRESQL
-    show-sql: true
     hibernate:
+#      ddl-auto: create-drop
       ddl-auto: update
   datasource:
     platform: postgres

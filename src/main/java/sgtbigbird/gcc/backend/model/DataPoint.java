@@ -13,11 +13,14 @@ public class DataPoint {
     @GeneratedValue
     @Id
     private int id;
+    private int pidx;
     private String runId;
+    private String respawnId;
     private String username;
     private int version;
     private String position;
     private String velocity;
+    private float speed;
     private float frontSpeed;
     private float inputSteer;
     private boolean inputBrake;
@@ -30,6 +33,8 @@ public class DataPoint {
     private String vecDir;
     private String vecLeft;
     private String vecUp;
+    private float slipDir;
+    private float slipLeft;
     private int curGear;
     private String flGroundContactMaterial;
     private String frGroundContactMaterial;
