@@ -8,25 +8,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-import sgtbigbird.gcc.backend.model.DataPoint;
 import sgtbigbird.gcc.backend.model.DataPointWrapper;
+import sgtbigbird.gcc.backend.model.RunKey;
+import sgtbigbird.gcc.backend.model.RunKeyWrapper;
 import sgtbigbird.gcc.backend.repository.DataPointRepository;
+import sgtbigbird.gcc.backend.repository.RunKeyRepository;
 
 import javax.naming.AuthenticationException;
-import java.net.URI;
 import java.util.*;
 
 @RestController
 @Slf4j
-public class DataPointController {
+public class ApplicationController {
 
     final String ERROR = "ERROR";
-
+    @Autowired
+    RunKeyRepository runKeyRepository;
     @Autowired
     DataPointRepository dataPointRepository;
     RestTemplate restTemplate = new RestTemplate();
@@ -41,6 +41,31 @@ public class DataPointController {
     Map<String, UUID> cache = new HashMap<>();
     Map<UUID, String> tokensIssued = new HashMap<>();
 
+    private UUID authenticateUuid(String uuid) throws AuthenticationException {
+        log.info("Authenticating uuid {}", uuid);
+        try {
+            UUID u = UUID.fromString(uuid);
+            log.info("Checking uuid {}", u);
+
+            if (!tokensIssued.containsKey(u)) {
+                throw new AuthenticationException();
+            }
+            return u;
+        } catch (IllegalArgumentException e) {
+            throw new AuthenticationException();
+        }
+
+    }
+    @GetMapping("/runkey")
+    public List<RunKey> getRunKeys(@RequestParam String token) throws AuthenticationException {
+        authenticateUuid(token);
+        return runKeyRepository.findAll();
+    }
+    @PostMapping("/runkey")
+    public void addRunKey(@RequestBody RunKeyWrapper runKeyWrapper) throws AuthenticationException {
+        authenticateUuid(runKeyWrapper.getToken());
+        runKeyRepository.save(runKeyWrapper.getRunKey());
+    }
     @PostMapping("/datapoint")
     public void postPoints(@RequestBody DataPointWrapper inList) throws AuthenticationException {
         if (inList.getToken().equals(ERROR)) {
@@ -48,19 +73,22 @@ public class DataPointController {
             throw new AuthenticationException();
         }
 
+        UUID u = authenticateUuid(inList.getToken());
+        Optional<RunKey> runKey = runKeyRepository.findByRkId(inList.getRkId());
 
-        UUID u = UUID.fromString(inList.getToken());
-        log.info("Checking uuid {}", u);
+        if (runKey.isPresent()) {
+            log.info("Persisting data for {}", tokensIssued.get(u));
+            inList.getData().forEach(
+                    (ol) -> ol.forEach(li -> {
+                        li.setUsername(tokensIssued.get(u));
+                        li.setRunKey(runKey.get());
+                    })
+            );
 
-        if (!tokensIssued.containsKey(u)) {
-            throw new AuthenticationException();
+            inList.getData().forEach((l) -> dataPointRepository.saveAll(l));
+        } else {
+            log.warn("Couldn't find rkid {}!", inList.getRkId());
         }
-        log.info("Persisting data for {}", tokensIssued.get(u));
-        inList.getData().forEach(
-                (ol) -> ol.forEach(li -> li.setUsername(tokensIssued.get(u)))
-        );
-
-        inList.getData().forEach((l) -> dataPointRepository.saveAll(l));
     }
 
     @GetMapping("/auth")
@@ -102,6 +130,8 @@ public class DataPointController {
             return ERROR;
         }
     }
+
+
     /*
     account_id -> b65b3cb1-6a5f-4616-9f3e-33be293aeac3
     display_name -> sgt_bigbird

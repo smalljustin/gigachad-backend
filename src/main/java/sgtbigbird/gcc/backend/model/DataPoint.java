@@ -1,18 +1,15 @@
 package sgtbigbird.gcc.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "datapoint")
+@Table(name = "datapoint_2")
 public class DataPoint {
     @GeneratedValue
     @Id
-    private int id;
+    private int dpId;
     private int pidx;
     private String runId;
     private String respawnId;
@@ -43,4 +40,6 @@ public class DataPoint {
     private String reactor;
     private long time;
     private float dt;
+    @ManyToOne
+    private RunKey runKey;
 }

@@ -7,8 +7,7 @@ import java.util.List;
 
 @Data
 @JsonDeserialize
-public class DataPointWrapper {
-    List<List< DataPoint >> data;
+public class RunKeyWrapper {
+    RunKey runKey;
     String token;
-    int rkId;
 }
