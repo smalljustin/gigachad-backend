@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import sgtbigbird.gcc.backend.exception.MapTagNotFoundException;
 
 import javax.naming.AuthenticationException;
 
@@ -31,4 +32,14 @@ public class RestResponseEntityExceptionHandler
         return handleExceptionInternal(ex, bodyOfResponse,
                 new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
+
+    @ExceptionHandler(value
+            = { MapTagNotFoundException.class })
+    protected ResponseEntity<Object> handleBadMapTagRequest(
+            RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "No matching map tags! Try something else...";
+        return handleExceptionInternal(ex, bodyOfResponse,
+                new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
+    }
+
 }

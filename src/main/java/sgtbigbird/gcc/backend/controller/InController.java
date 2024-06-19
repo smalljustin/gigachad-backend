@@ -11,60 +11,54 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import sgtbigbird.gcc.backend.model.DataPointWrapper;
-import sgtbigbird.gcc.backend.model.RunKey;
-import sgtbigbird.gcc.backend.model.RunKeyWrapper;
+import sgtbigbird.gcc.backend.model.*;
 import sgtbigbird.gcc.backend.repository.DataPointRepository;
+import sgtbigbird.gcc.backend.repository.MapTagRepository;
 import sgtbigbird.gcc.backend.repository.RunKeyRepository;
+import sgtbigbird.gcc.backend.service.AuthenticationService;
 
 import javax.naming.AuthenticationException;
 import java.util.*;
 
-@RestController
+@RestController("/in")
 @Slf4j
-public class ApplicationController {
-
+public class InController {
     final String ERROR = "ERROR";
     @Autowired
     RunKeyRepository runKeyRepository;
     @Autowired
     DataPointRepository dataPointRepository;
-    RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    MapTagRepository mapTagRepository;
+    @Autowired
+    AuthenticationService authenticationService;
     @Value("${auth.url}")
     String url;
-
     @Value("${auth.secret}")
     String app_secret;
-
     @Autowired
     ObjectMapper objectMapper;
     Map<String, UUID> cache = new HashMap<>();
-    Map<UUID, String> tokensIssued = new HashMap<>();
-
-    private UUID authenticateUuid(String uuid) throws AuthenticationException {
-        log.info("Authenticating uuid {}", uuid);
-        try {
-            UUID u = UUID.fromString(uuid);
-            log.info("Checking uuid {}", u);
-
-            if (!tokensIssued.containsKey(u)) {
-                throw new AuthenticationException();
-            }
-            return u;
-        } catch (IllegalArgumentException e) {
-            throw new AuthenticationException();
-        }
-
-    }
+    
     @GetMapping("/runkey")
     public List<RunKey> getRunKeys(@RequestParam String token) throws AuthenticationException {
-        authenticateUuid(token);
+        authenticationService.authenticateUuid(token);
         return runKeyRepository.findAll();
     }
     @PostMapping("/runkey")
     public void addRunKey(@RequestBody RunKeyWrapper runKeyWrapper) throws AuthenticationException {
-        authenticateUuid(runKeyWrapper.getToken());
+        authenticationService.authenticateUuid(runKeyWrapper.getToken());
         runKeyRepository.save(runKeyWrapper.getRunKey());
+    }
+    @GetMapping("/maptag")
+    public List<MapTag> getRunTags(@RequestParam String token) throws AuthenticationException {
+        authenticationService.authenticateUuid(token);
+        return mapTagRepository.findAll();
+    }
+    @PostMapping("/maptag")
+    public void addMapTag(@RequestBody MapTagWrapper mapTagWrapper) throws AuthenticationException {
+        authenticationService.authenticateUuid(mapTagWrapper.getToken());
+        mapTagRepository.save(mapTagWrapper.getMapTag());
     }
     @PostMapping("/datapoint")
     public void postPoints(@RequestBody DataPointWrapper inList) throws AuthenticationException {
@@ -73,14 +67,14 @@ public class ApplicationController {
             throw new AuthenticationException();
         }
 
-        UUID u = authenticateUuid(inList.getToken());
+        UUID u = authenticationService.authenticateUuid(inList.getToken());
         Optional<RunKey> runKey = runKeyRepository.findByRkId(inList.getRkId());
 
         if (runKey.isPresent()) {
-            log.info("Persisting data for {}", tokensIssued.get(u));
+            log.info("Persisting data for {}", authenticationService.getTokensIssued().get(u));
             inList.getData().forEach(
                     (ol) -> ol.forEach(li -> {
-                        li.setUsername(tokensIssued.get(u));
+                        li.setUsername(authenticationService.getTokensIssued().get(u));
                         li.setRunKey(runKey.get());
                     })
             );
@@ -122,7 +116,7 @@ public class ApplicationController {
         if (resp.getStatusCode() == HttpStatus.OK) {
             Map<String, String> body = (Map<String, String>) resp.getBody();
             UUID r = UUID.randomUUID();
-            tokensIssued.put(r, body.get("display_name"));
+            authenticationService.getTokensIssued().put(r, body.get("display_name"));
             log.info("Issued token {} to {}", r, body.get("display_name"));
             cache.put(secret, r);
             return r.toString();

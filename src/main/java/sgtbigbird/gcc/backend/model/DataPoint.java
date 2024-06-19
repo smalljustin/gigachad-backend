@@ -15,6 +15,8 @@ public class DataPoint {
     private String respawnId;
     private String username;
     private int version;
+    private String mapUuid;
+    private String vehicleType;
     private String position;
     private String velocity;
     private float speed;
