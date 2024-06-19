@@ -27,7 +27,13 @@ import java.util.*;
 @Slf4j
 public class OutController {
     @Autowired
+    MapTagRepository mapTagRepository;
+    @Autowired
     PublishingService publishingService;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
     @GetMapping("/tag")
     public List<DataPoint> getDataPointsByTag(@RequestParam String tag) throws MapTagNotFoundException {
         return publishingService.getDataPointsByTag(tag);
@@ -36,6 +42,13 @@ public class OutController {
     @GetMapping("/all")
     public List<DataPoint> getAllDataPoints() {
         return publishingService.getAllDataPoints();
+    }
+
+    @GetMapping("/maptag")
+    public List<MapTag> getRunTags() throws AuthenticationException, JsonProcessingException {
+        List<MapTag> ret = mapTagRepository.findAll();
+        log.debug("Ret: {}", objectMapper.writeValueAsString(ret));
+        return ret;
     }
 
 

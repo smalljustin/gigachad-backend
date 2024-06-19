@@ -19,7 +19,7 @@ public class RestResponseEntityExceptionHandler
             = { AuthenticationException.class })
     protected ResponseEntity<Object> handleAuthenticationException(
             AuthenticationException ex, WebRequest request) {
-        String bodyOfResponse = "Unauthorized UUID!";
+        String bodyOfResponse = "";
         return handleExceptionInternal(ex, bodyOfResponse,
                 new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }

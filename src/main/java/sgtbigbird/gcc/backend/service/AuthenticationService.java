@@ -50,6 +50,21 @@ public class AuthenticationService {
         }
     }
 
+    public String getUsername(String uuid) throws AuthenticationException {
+        log.info("Authenticating uuid {}", uuid);
+        try {
+            UUID u = UUID.fromString(uuid);
+            log.info("Checking uuid {}", u);
+
+            if (!tokensIssued.containsKey(u)) {
+                throw new AuthenticationException();
+            }
+            return tokensIssued.get(u);
+        } catch (IllegalArgumentException e) {
+            throw new AuthenticationException();
+        }
+    }
+
     @GetMapping("/auth")
     public String token(@RequestParam String secret) throws AuthenticationException {
         if (secret == null || secret.length() < 5 || secret.contains(" ")) {

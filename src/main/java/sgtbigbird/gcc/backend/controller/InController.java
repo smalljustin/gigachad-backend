@@ -20,10 +20,9 @@ import sgtbigbird.gcc.backend.service.AuthenticationService;
 import javax.naming.AuthenticationException;
 import java.util.*;
 
-@RestController("/in")
+@RestController
 @Slf4j
 public class InController {
-    final String ERROR = "ERROR";
     @Autowired
     RunKeyRepository runKeyRepository;
     @Autowired
@@ -51,22 +50,20 @@ public class InController {
         runKeyRepository.save(runKeyWrapper.getRunKey());
     }
     @GetMapping("/maptag")
-    public List<MapTag> getRunTags(@RequestParam String token) throws AuthenticationException {
+    public List<MapTag> getRunTags(@RequestParam String token) throws AuthenticationException, JsonProcessingException {
         authenticationService.authenticateUuid(token);
-        return mapTagRepository.findAll();
+        List<MapTag> ret = mapTagRepository.findAll();
+        log.debug("Ret: {}", objectMapper.writeValueAsString(ret));
+        return ret;
     }
     @PostMapping("/maptag")
     public void addMapTag(@RequestBody MapTagWrapper mapTagWrapper) throws AuthenticationException {
         authenticationService.authenticateUuid(mapTagWrapper.getToken());
+        mapTagWrapper.getMapTag().setUsername(authenticationService.getUsername(mapTagWrapper.getToken()));
         mapTagRepository.save(mapTagWrapper.getMapTag());
     }
     @PostMapping("/datapoint")
     public void postPoints(@RequestBody DataPointWrapper inList) throws AuthenticationException {
-        if (inList.getToken().equals(ERROR)) {
-            log.warn("Got the error token :O");
-            throw new AuthenticationException();
-        }
-
         UUID u = authenticationService.authenticateUuid(inList.getToken());
         Optional<RunKey> runKey = runKeyRepository.findByRkId(inList.getRkId());
 
@@ -85,10 +82,14 @@ public class InController {
         }
     }
 
-    @GetMapping("/auth")
-    public String token(@RequestParam String secret) throws JsonProcessingException, InterruptedException {
+    @PostMapping("/auth")
+    public String token(@RequestBody Map<String, String> authBody) throws AuthenticationException {
+        if (!authBody.containsKey("secret")) {
+            throw new AuthenticationException();
+        }
+        String secret = authBody.get("secret");
         if (secret == null || secret.length() < 5 || secret.contains(" ")) {
-            return ERROR;
+            throw new AuthenticationException();
         }
         log.info("Got token request for secret {}", secret);
         if (cache.containsKey(secret)) {
@@ -110,7 +111,7 @@ public class InController {
         try {
             resp = restTemplate.exchange(url, HttpMethod.POST, requestBodyFormUrlEncoded, Object.class);
         } catch (HttpServerErrorException e) {
-            return ERROR;
+            throw new AuthenticationException();
         }
 
         if (resp.getStatusCode() == HttpStatus.OK) {
@@ -121,7 +122,7 @@ public class InController {
             cache.put(secret, r);
             return r.toString();
         } else {
-            return ERROR;
+            throw new AuthenticationException();
         }
     }
 

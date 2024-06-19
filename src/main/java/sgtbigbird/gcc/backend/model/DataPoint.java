@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "datapoint_2")
+@Table(name = "datapoint_3")
 public class DataPoint {
     @GeneratedValue
     @Id
