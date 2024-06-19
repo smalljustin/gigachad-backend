@@ -29,12 +29,19 @@ public class OutController {
     @Autowired
     MapTagRepository mapTagRepository;
     @Autowired
+    RunKeyRepository runKeyRepository;
+    @Autowired
     PublishingService publishingService;
 
     @Autowired
     ObjectMapper objectMapper;
 
-    @GetMapping("/tag")
+    @GetMapping("/data/runkey")
+    public List<DataPoint> getDataPointsByRunkey(@RequestParam String runkey) throws MapTagNotFoundException {
+        return publishingService.getDataPointsByRunkey(runkey);
+    }
+
+    @GetMapping("/data/tag")
     public List<DataPoint> getDataPointsByTag(@RequestParam String tag) throws MapTagNotFoundException {
         return publishingService.getDataPointsByTag(tag);
     }
@@ -47,6 +54,13 @@ public class OutController {
     @GetMapping("/maptag")
     public List<MapTag> getRunTags() throws AuthenticationException, JsonProcessingException {
         List<MapTag> ret = mapTagRepository.findAll();
+        log.debug("Ret: {}", objectMapper.writeValueAsString(ret));
+        return ret;
+    }
+
+    @GetMapping("/runkey")
+    public List<RunKey> getRunKeys() throws AuthenticationException, JsonProcessingException {
+        List<RunKey> ret = runKeyRepository.findAll();
         log.debug("Ret: {}", objectMapper.writeValueAsString(ret));
         return ret;
     }
