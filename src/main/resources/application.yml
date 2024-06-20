@@ -12,3 +12,7 @@ spring:
 
 auth:
   url: https://openplanet.dev/api/auth/validate
+
+server:
+  compression:
+    enabled: true

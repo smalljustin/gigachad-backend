@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>sgtbigbird</groupId>
 	<artifactId>gcc.backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1</version>
 	<name>gcc.backend</name>
 	<description>Backend for gcc</description>
 	<properties>
@@ -48,6 +48,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
