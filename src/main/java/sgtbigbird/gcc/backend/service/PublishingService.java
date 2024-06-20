@@ -40,7 +40,7 @@ public class PublishingService {
             dataPointCacheByTag = new HashMap<>();
             dataPointCacheByRunkey = new HashMap<>();
             allDataPointsCache = null;
-
+            maxDpId = curDpId;
         }
     }
     public List<DataPoint> getDataPointsByRunkey(String runkey) throws MapTagNotFoundException {
