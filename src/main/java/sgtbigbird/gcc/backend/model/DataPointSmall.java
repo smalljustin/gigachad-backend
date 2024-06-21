@@ -23,6 +23,10 @@ public class DataPointSmall {
         this.frGroundContactMaterial = dp.getFrGroundContactMaterial();
         this.rlGroundContactMaterial = dp.getRlGroundContactMaterial();
         this.rrGroundContactMaterial = dp.getRrGroundContactMaterial();
+        this.flIcing01 = dp.getFlIcing01();
+        this.frIcing01 = dp.getFrIcing01();
+        this.rlIcing01 = dp.getRlIcing01();
+        this.rrIcing01 = dp.getRrIcing01();
         this.reactor = dp.getReactor();
         this.time = dp.getTime();
         this.dt = dp.getDt();
@@ -45,6 +49,12 @@ public class DataPointSmall {
     private String frGroundContactMaterial;
     private String rlGroundContactMaterial;
     private String rrGroundContactMaterial;
+
+    private float flIcing01;
+    private float frIcing01;
+    private float rlIcing01;
+    private float rrIcing01;
+
     private String reactor;
     private long time;
     private float dt;

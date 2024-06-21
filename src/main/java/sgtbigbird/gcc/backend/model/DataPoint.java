@@ -39,6 +39,10 @@ public class DataPoint {
     private String frGroundContactMaterial;
     private String rlGroundContactMaterial;
     private String rrGroundContactMaterial;
+    private float flIcing01;
+    private float frIcing01;
+    private float rlIcing01;
+    private float rrIcing01;
     private String reactor;
     private long time;
     private float dt;
